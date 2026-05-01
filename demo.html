@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConsentKit — Plug-and-Play Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Figtree',sans-serif;background:#0c0e14;color:#e2e8f0;min-height:100vh}
+
+/* ── Nav ─────────────────────────────────────────────── */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(12,14,20,0.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:200}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;color:#fff}
+.nav-logo span{color:#6366f1}
+.nav-links{display:flex;gap:6px}
+.nav-link{padding:5px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,0.45);font-family:'Figtree',sans-serif;transition:all 0.2s}
+.nav-link:hover{background:rgba(255,255,255,0.06);color:#fff}
+.nav-link.active{background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.2)}
+
+/* ── Layout ──────────────────────────────────────────── */
+.page{display:grid;grid-template-columns:1fr 420px;min-height:calc(100vh - 60px)}
+@media(max-width:900px){.page{grid-template-columns:1fr}.sidebar{display:none}}
+
+/* ── Main content ────────────────────────────────────── */
+.main{padding:3rem 2.5rem 6rem;border-right:1px solid rgba(255,255,255,0.06)}
+
+.section-chip{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6366f1;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:1rem;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);padding:4px 10px;border-radius:99px}
+.page-title{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-0.04em;line-height:1.1;color:#f8fafc;margin-bottom:.8rem}
+.page-title span{color:#6366f1}
+.page-desc{font-size:14px;color:rgba(255,255,255,0.45);line-height:1.75;max-width:560px;margin-bottom:2.5rem}
+
+/* ── Code block ──────────────────────────────────────── */
+.code-wrap{margin-bottom:1.5rem}
+.code-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
+.code-box{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden}
+.code-box-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.code-box-lang{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:0.08em;text-transform:uppercase}
+.code-copy-btn{padding:3px 10px;border-radius:5px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-family:'Figtree',sans-serif;transition:all 0.15s}
+.code-copy-btn:hover{border-color:rgba(99,102,241,0.4);color:#818cf8}
+.code-copy-btn.copied{border-color:rgba(74,222,128,0.4);color:#4ade80}
+pre.code{padding:1.2rem 1.4rem;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9;overflow-x:auto;color:rgba(255,255,255,0.5)}
+.t-tag{color:#f97316}.t-attr{color:#a78bfa}.t-val{color:#86efac}.t-comment{color:rgba(255,255,255,0.25)}
+.t-fn{color:#60a5fa}.t-str{color:#86efac}.t-key{color:#a78bfa}.t-kw{color:#f97316}
+
+/* ── Steps ───────────────────────────────────────────── */
+.steps{display:flex;flex-direction:column;gap:1.2rem;margin-bottom:2.5rem}
+.step{display:flex;gap:14px;align-items:flex-start}
+.step-num{width:26px;height:26px;border-radius:50%;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25);color:#818cf8;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;font-family:'JetBrains Mono',monospace}
+.step-body{}
+.step-title{font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:3px}
+.step-desc{font-size:13px;color:rgba(255,255,255,0.4);line-height:1.6}
+
+/* ── Divider ─────────────────────────────────────────── */
+.divider{height:1px;background:rgba(255,255,255,0.06);margin:2.5rem 0}
+
+/* ── Button row ──────────────────────────────────────── */
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2rem}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-family:'Figtree',sans-serif;transition:all 0.15s}
+.btn:hover{background:rgba(255,255,255,0.09);color:#fff;border-color:rgba(255,255,255,0.18)}
+.btn.primary{background:#6366f1;border-color:#6366f1;color:#fff}
+.btn.primary:hover{background:#4f52d9}
+
+/* ── State display ───────────────────────────────────── */
+.state-box{background:#0d1117;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:1.2rem 1.4rem;margin-bottom:1.5rem}
+.state-box pre{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:rgba(255,255,255,0.35);min-height:48px}
+
+/* ── Feature pills ───────────────────────────────────── */
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2rem}
+.pill{padding:4px 12px;border-radius:99px;font-size:11px;font-weight:500;font-family:'JetBrains Mono',monospace;letter-spacing:0.03em}
+.pill-green{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:#4ade80}
+.pill-blue{background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);color:#60a5fa}
+.pill-purple{background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);color:#a78bfa}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.sidebar{padding:2.5rem 2rem;display:flex;flex-direction:column;gap:1.2rem}
+.sb-section{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.2rem}
+.sb-title{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:12px;font-family:'JetBrains Mono',monospace}
+.api-method{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:flex-start;gap:8px}
+.api-method:last-child{border-bottom:none;padding-bottom:0}
+.api-name{font-family:'JetBrains Mono',monospace;font-size:11px;color:#818cf8;min-width:120px;flex-shrink:0}
+.api-desc{font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5}
+.attr-row{padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px}
+.attr-row:last-child{border-bottom:none;padding-bottom:0}
+.attr-name{font-family:'JetBrains Mono',monospace;color:#f97316;display:block;margin-bottom:2px}
+.attr-desc{color:rgba(255,255,255,0.35);line-height:1.5}
+.theme-swatches{display:flex;gap:8px}
+.theme-swatch{flex:1;padding:8px 0;border-radius:8px;font-size:11px;font-weight:500;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.45);font-family:'JetBrains Mono',monospace;transition:all 0.15s}
+.theme-swatch:hover{border-color:rgba(255,255,255,0.15);color:#fff}
+.theme-swatch.t-dark{border-color:rgba(99,102,241,0.35);color:#818cf8;background:rgba(99,102,241,0.08)}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-logo">Consent<span>Kit</span></div>
+  <div class="nav-links">
+    <button class="nav-link active">Plug-and-Play</button>
+    <button class="nav-link" onclick="CookieConsent.show()">Show Banner</button>
+    <button class="nav-link" onclick="CookieConsent.showPreferences()">Preferences</button>
+    <button class="nav-link" onclick="CookieConsent.reset()">Reset</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Main -->
+  <div class="main">
+    <div class="section-chip">Drop-In Integration</div>
+    <h1 class="page-title">One tag.<br><span>Fully working.</span></h1>
+    <p class="page-desc">ConsentKit auto-injects its own CSS and HTML. Add one script tag with data attributes — no copy-pasting, no manual setup, no configuration files.</p>
+
+    <div class="pills">
+      <span class="pill pill-green">Zero setup</span>
+      <span class="pill pill-green">Data attributes</span>
+      <span class="pill pill-blue">GDPR compliant</span>
+      <span class="pill pill-blue">WCAG 2.1 AA</span>
+      <span class="pill pill-purple">3 themes</span>
+      <span class="pill pill-purple">JS dispatcher</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Step 1 -->
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Drop in one script tag</div>
+          <div class="step-desc">Place this before <code style="color:#f97316;font-family:monospace">&lt;/body&gt;</code>. Everything else is automatic.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">Minimum — works out of the box</div>
+      <div class="code-box">
+        <div class="code-box-header">
+          <span class="code-box-lang">HTML</span>
+          <button class="code-copy-btn" onclick="copyCode(this, 'minimal')">Copy</button>
+        </div>
+        <pre class="code" id="minimal"><span class="t-tag">&lt;script</span> <span class="t-attr">src</span>=<span class="t-val">"dist/consentkit.min.js"</span><span class="t-tag">&gt;&lt;/script&gt;</span></pre>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">Full configuration via data attributes</div>
+      <div class="code-box">
+        <div class="code-box-header">
+          <span class="code-box-lang">HTML</span>
+          <button class="code-copy-btn" onclick="copyCode(this, 'full-attrs')">Copy</button>
+        </div>
+        <pre class="code" id="full-attrs"><span class="t-tag">&lt;script</span>
+  <span class="t-attr">src</span>=<span class="t-val">"dist/consentkit.min.js"</span>
+  <span class="t-attr">data-theme</span>=<span class="t-val">"dark"</span>
+  <span class="t-attr">data-position</span>=<span class="t-val">"bottom"</span>
+  <span class="t-attr">data-privacy-url</span>=<span class="t-val">"/privacy-policy"</span>
+  <span class="t-attr">data-expire-days</span>=<span class="t-val">"365"</span>
+  <span class="t-attr">data-auto-show</span>=<span class="t-val">"true"</span><span class="t-tag">&gt;&lt;/script&gt;</span></pre>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Step 2 -->
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Gate your analytics scripts</div>
+          <div class="step-desc">Use <code style="color:#a78bfa;font-family:monospace">CookieConsent.on()</code> after the script tag. Callbacks fire only when consent is granted — immediately on load if already given.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-box">
+        <div class="code-box-header">
+          <span class="code-box-lang">JavaScript</span>
+          <button class="code-copy-btn" onclick="copyCode(this, 'gating')">Copy</button>
+        </div>
+        <pre class="code" id="gating"><span class="t-comment">// Place after dist/consentkit.min.js</span>
+<span class="t-kw">CookieConsent</span>.<span class="t-fn">on</span>(<span class="t-str">'analytics'</span>, <span class="t-kw">function</span>() {
+  <span class="t-comment">// Runs only after analytics consent granted</span>
+  gtag(<span class="t-str">'js'</span>, <span class="t-kw">new</span> Date());
+  gtag(<span class="t-str">'config'</span>, <span class="t-str">'G-XXXXXXXXXX'</span>);
+});
+
+<span class="t-kw">CookieConsent</span>.<span class="t-fn">on</span>(<span class="t-str">'marketing'</span>, <span class="t-kw">function</span>() {
+  <span class="t-comment">// Runs only after marketing consent granted</span>
+  fbq(<span class="t-str">'init'</span>, <span class="t-str">'YOUR_PIXEL_ID'</span>);
+  fbq(<span class="t-str">'track'</span>, <span class="t-str">'PageView'</span>);
+});
+
+<span class="t-kw">CookieConsent</span>.<span class="t-fn">on</span>(<span class="t-str">'functional'</span>, <span class="t-kw">function</span>() {
+  <span class="t-comment">// Runs only after functional consent granted</span>
+});
+
+<span class="t-comment">// Chain them</span>
+<span class="t-kw">CookieConsent</span>
+  .<span class="t-fn">on</span>(<span class="t-str">'analytics'</span>, initGA)
+  .<span class="t-fn">on</span>(<span class="t-str">'marketing'</span>, initPixel);</pre>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Step 3 — Optional JS override -->
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Optional — override via JavaScript</div>
+          <div class="step-desc">Data attributes cover 100% of use cases. But you can also call <code style="color:#a78bfa;font-family:monospace">CookieConsent.init()</code> to override settings at runtime.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-box">
+        <div class="code-box-header">
+          <span class="code-box-lang">JavaScript</span>
+          <button class="code-copy-btn" onclick="copyCode(this, 'js-init')">Copy</button>
+        </div>
+        <pre class="code" id="js-init"><span class="t-comment">// Optional — data attributes are enough for most cases</span>
+<span class="t-kw">CookieConsent</span>.<span class="t-fn">init</span>({
+  theme:      <span class="t-str">'dark'</span>,
+  position:   <span class="t-str">'bottom'</span>,
+  privacyUrl: <span class="t-str">'/privacy-policy'</span>,
+  expireDays: <span class="t-str">365</span>,
+  autoShow:   <span class="t-kw">true</span>,
+});</pre>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Live controls -->
+    <div class="section-chip">Live Controls</div>
+    <p class="page-desc" style="margin-bottom:1rem">Interact with the ConsentKit instance running on this page right now.</p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="CookieConsent.show()">Show Banner</button>
+      <button class="btn" onclick="CookieConsent.showPreferences()">Open Preferences</button>
+      <button class="btn" onclick="CookieConsent.acceptAll()">Accept All</button>
+      <button class="btn" onclick="CookieConsent.rejectAll()">Reject All</button>
+      <button class="btn" onclick="CookieConsent.reset()">Reset</button>
+      <button class="btn" onclick="logState()">Log State</button>
+    </div>
+
+    <div class="code-label">Live consent state</div>
+    <div class="state-box">
+      <pre id="state-out">// Interact above then click "Log State" to see output here.</pre>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+
+    <div class="sb-section">
+      <div class="sb-title">Data Attributes</div>
+      <div class="attr-row">
+        <span class="attr-name">data-theme</span>
+        <span class="attr-desc">"dark" | "light" | "colorful"<br>Default: "dark"</span>
+      </div>
+      <div class="attr-row">
+        <span class="attr-name">data-position</span>
+        <span class="attr-desc">"bottom" | "top"<br>Default: "bottom"</span>
+      </div>
+      <div class="attr-row">
+        <span class="attr-name">data-privacy-url</span>
+        <span class="attr-desc">URL for Privacy Policy link<br>Default: "/privacy-policy"</span>
+      </div>
+      <div class="attr-row">
+        <span class="attr-name">data-expire-days</span>
+        <span class="attr-desc">Days before consent expires<br>Default: 365</span>
+      </div>
+      <div class="attr-row">
+        <span class="attr-name">data-auto-show</span>
+        <span class="attr-desc">"true" | "false"<br>Show banner if no consent stored<br>Default: "true"</span>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">JS API</div>
+      <div class="api-method">
+        <span class="api-name">.on(cat, cb)</span>
+        <span class="api-desc">Gate a script on consent. Fires immediately if already granted.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.show()</span>
+        <span class="api-desc">Show the banner.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.hide()</span>
+        <span class="api-desc">Hide the banner.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.showPreferences()</span>
+        <span class="api-desc">Open the Preference Centre.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.hidePreferences()</span>
+        <span class="api-desc">Close the Preference Centre.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.acceptAll()</span>
+        <span class="api-desc">Accept all categories.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.rejectAll()</span>
+        <span class="api-desc">Reject non-essential categories.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.savePreferences()</span>
+        <span class="api-desc">Save current toggle state.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.getConsent()</span>
+        <span class="api-desc">Returns current consent object or null.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.hasConsent(cat)</span>
+        <span class="api-desc">Returns boolean for a category.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name">.reset()</span>
+        <span class="api-desc">Clear all consent and re-show banner.</span>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Switch Theme Live</div>
+      <div class="theme-swatches">
+        <div class="theme-swatch t-dark" onclick="switchTheme('dark',this)">dark</div>
+        <div class="theme-swatch" onclick="switchTheme('light',this)">light</div>
+        <div class="theme-swatch" onclick="switchTheme('colorful',this)">color</div>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Consent Categories</div>
+      <div class="api-method">
+        <span class="api-name" style="color:#4ade80">necessary</span>
+        <span class="api-desc">Always on. Cannot be disabled.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name" style="color:#60a5fa">functional</span>
+        <span class="api-desc">Language, theme, saved prefs.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name" style="color:#a78bfa">analytics</span>
+        <span class="api-desc">GA, Hotjar, Mixpanel.</span>
+      </div>
+      <div class="api-method">
+        <span class="api-name" style="color:#f97316">marketing</span>
+        <span class="api-desc">Meta Pixel, Google Ads.</span>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+</div><!-- /page -->
+
+<!--
+  =====================================================
+  THIS IS ALL A BUYER NEEDS IN THEIR PAGE:
+  =====================================================
+-->
+<script
+  src="dist/consentkit.min.js"
+  data-theme="dark"
+  data-position="bottom"
+  data-privacy-url="/privacy-policy"
+  data-expire-days="365"
+  data-auto-show="true">
+</script>
+<!--
+  =====================================================
+  Then optionally gate your scripts:
+  =====================================================
+-->
+<script>
+CookieConsent
+  .on('analytics', function() {
+    console.log('[ConsentKit] Analytics consent granted.');
+  })
+  .on('marketing', function() {
+    console.log('[ConsentKit] Marketing consent granted.');
+  });
+
+/* ── Demo helpers ──────────────────────────────────── */
+function logState() {
+  var s = CookieConsent.getConsent();
+  var el = document.getElementById('state-out');
+  if (!s) { el.textContent = '// null — no consent recorded yet.'; return; }
+  el.innerHTML =
+    '<span style="color:#a78bfa">const</span> consent = ' +
+    JSON.stringify(s, null, 2)
+      .replace(/true/g,  '<span style="color:#4ade80">true</span>')
+      .replace(/false/g, '<span style="color:#f87171">false</span>')
+      .replace(/"(\w+)":/g, '<span style="color:#93c5fd">"$1"</span>:');
+}
+
+function switchTheme(t, el) {
+  document.querySelectorAll('.theme-swatch').forEach(function(s){ s.classList.remove('t-dark'); });
+  el.classList.add('t-dark');
+  var targets = ['cc-banner','cc-modal','cc-settings-trigger'];
+  targets.forEach(function(id){
+    var node = document.getElementById(id);
+    if (!node) return;
+    node.classList.remove('cc-theme-dark','cc-theme-light','cc-theme-colorful');
+    node.classList.add('cc-theme-'+t);
+  });
+}
+
+function copyCode(btn, id) {
+  var el = document.getElementById(id);
+  var text = el ? el.innerText : '';
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
